@@ -139,8 +139,10 @@ ptcli -mode socks                    # just runs Tor, prints the SOCKS5 to point
   which is the worst kind of bug for an anonymity tool. Use `netns`.
 
 Same limit as Windows: voice/screen are UDP, Tor doesn't carry UDP — with
-netns they simply have no route (fail closed). **Untested by the author at
-runtime — test it on your own machine before relying on it.**
+netns they simply have no route (fail closed). **Validated on WSL2 (Ubuntu):
+DNS and TCP inside the namespace both exit through Tor (`IsTor:true`), traffic
+to raw IPs included. A real distro's kernel may differ — test on your own
+machine before relying on it.**
 
 ---
 

@@ -88,11 +88,18 @@ func setupNetns(transPort, dnsPort int) {
 	// nftables: tudo que vem da namespace vira TransPort/DNSPort do Tor.
 	// TCP → TransPort, DNS (udp/53) → DNSPort. UDP restante não é tratado,
 	// então não tem rota — falha fechada.
+	//
+	// Usa "dnat to 127.0.0.1:porta" e NÃO "redirect": o redirect do nft manda
+	// o pacote para o IP da interface de entrada (10.66.66.1), mas o Tor
+	// escuta no loopback (127.0.0.1) — não bateria e daria "connection
+	// refused". O dnat explícito para 127.0.0.1, junto do route_localnet
+	// ligado acima, entrega no TransPort/DNSPort do Tor. (Validado em WSL2:
+	// DNS resolve pelo Tor e o HTTPS sai por nó Tor, tudo dentro da netns.)
 	ruleset := fmt.Sprintf(`table ip %[1]s {
   chain prerouting {
     type nat hook prerouting priority dstnat; policy accept;
-    iifname "%[2]s" udp dport 53 redirect to :%[4]d
-    iifname "%[2]s" meta l4proto tcp redirect to :%[3]d
+    iifname "%[2]s" udp dport 53 dnat to 127.0.0.1:%[4]d
+    iifname "%[2]s" meta l4proto tcp dnat to 127.0.0.1:%[3]d
   }
 }`, nftTable, vethHost, transPort, dnsPort)
 

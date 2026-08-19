@@ -138,8 +138,10 @@ ptcli -mode socks                    # só sobe o Tor e mostra o SOCKS5 pra apon
   aberta** (vazar), o pior tipo de bug num app de anonimato. Use `netns`.
 
 Mesmo limite do Windows: voz e tela são UDP, o Tor não carrega UDP — com a
-netns simplesmente ficam sem rota (falha fechada). **Não testado pelo autor
-em runtime — teste na sua máquina antes de confiar.**
+netns simplesmente ficam sem rota (falha fechada). **Validado no WSL2 (Ubuntu):
+DNS e TCP dentro da namespace saem pelo Tor (`IsTor:true`), inclusive tráfego
+para IP cru. O kernel de uma distro real pode diferir — teste na sua máquina
+antes de confiar.**
 
 ---
 

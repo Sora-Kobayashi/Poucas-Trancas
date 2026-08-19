@@ -118,6 +118,30 @@ through a Discord experiment:
 > This touches Discord's internal flags via Vencord — against its ToS, same
 > as the disclaimer below. Use at your own risk.
 
+
+### Linux (CLI, experimental)
+
+There's no WinDivert on Linux, so the Linux side is a separate CLI
+(`cmd/ptcli`) with the exit backend chosen **explicitly**:
+
+```bash
+sudo ptcli -mode netns -- discord   # recommended: app in a netns, Tor-only exit
+ptcli -mode socks                    # just runs Tor, prints the SOCKS5 to point apps at
+```
+
+- **`-mode netns`** runs the app in a network namespace whose only route is
+  Tor's TransPort. It catches *all* of the app's traffic (including
+  Chromium's) and **fails closed**: if routing doesn't come up, the namespace
+  has no route and nothing leaks. Needs root + `tor`, `iproute2`, `nftables`.
+- **`-mode socks`** just runs Tor and hands you the SOCKS5 address.
+- **`-mode nfqueue`** is the userspace-packet-rewrite twin of WinDivert — not
+  enabled yet on purpose: rewriting in userspace can **fail open** (leak),
+  which is the worst kind of bug for an anonymity tool. Use `netns`.
+
+Same limit as Windows: voice/screen are UDP, Tor doesn't carry UDP — with
+netns they simply have no route (fail closed). **Untested by the author at
+runtime — test it on your own machine before relying on it.**
+
 ---
 
 ## Privacy, no fine print

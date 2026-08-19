@@ -117,6 +117,30 @@ para liberar por um experiment do Discord:
 > Isso mexe em flags internas do Discord via Vencord — contraria o ToS dele,
 > igual ao aviso lá embaixo. Use por sua conta.
 
+
+### Linux (CLI, experimental)
+
+Não há WinDivert no Linux, então o lado Linux é uma CLI separada
+(`cmd/ptcli`) com o backend de saída escolhido **explicitamente**:
+
+```bash
+sudo ptcli -mode netns -- discord   # recomendado: app numa netns, saída só Tor
+ptcli -mode socks                    # só sobe o Tor e mostra o SOCKS5 pra apontar apps
+```
+
+- **`-mode netns`** roda o app numa network namespace cuja única rota é o
+  TransPort do Tor. Pega *todo* o tráfego do app (inclusive o do Chromium) e
+  **falha fechada**: se o roteamento não subir, a namespace fica sem rota e
+  nada vaza. Precisa de root + `tor`, `iproute2`, `nftables`.
+- **`-mode socks`** só sobe o Tor e te dá o endereço SOCKS5.
+- **`-mode nfqueue`** é o gêmeo do WinDivert (reescreve pacote em userspace)
+  — de propósito ainda não ligado: reescrever em userspace pode **falhar
+  aberta** (vazar), o pior tipo de bug num app de anonimato. Use `netns`.
+
+Mesmo limite do Windows: voz e tela são UDP, o Tor não carrega UDP — com a
+netns simplesmente ficam sem rota (falha fechada). **Não testado pelo autor
+em runtime — teste na sua máquina antes de confiar.**
+
 ---
 
 ## Privacidade, sem letra miúda

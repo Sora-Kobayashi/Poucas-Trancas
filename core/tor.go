@@ -31,6 +31,12 @@ type Tor struct {
 	Bridges  []string
 	Lyrebird string
 
+	// TransparentPorts abre TransPort e DNSPort, usados pelo modo netns do
+	// Linux (proxy transparente). No Windows fica sempre desligado.
+	TransparentPorts bool
+	TransPort        int // preenchido pelo StartAuto quando TransparentPorts
+	DNSPort          int
+
 	cmd  *exec.Cmd
 	done chan struct{}
 
@@ -64,6 +70,13 @@ func (t *Tor) writeTorrc() (string, error) {
 	b.WriteString("CookieAuthentication 1\n")
 	fmt.Fprintf(&b, "DataDirectory %s\n", fwd(t.DataDir))
 	b.WriteString("ClientOnly 1\nAvoidDiskWrites 1\nLog notice stdout\n")
+
+	if t.TransparentPorts && t.TransPort > 0 {
+		// Proxy transparente para o modo netns: o nftables redireciona o
+		// tráfego da namespace para cá, e o Tor lê o destino original.
+		fmt.Fprintf(&b, "TransPort 127.0.0.1:%d\n", t.TransPort)
+		fmt.Fprintf(&b, "DNSPort 127.0.0.1:%d\n", t.DNSPort)
+	}
 
 	if len(t.Bridges) > 0 && t.Lyrebird != "" {
 		fmt.Fprintf(&b, "ClientTransportPlugin obfs4,meek_lite,webtunnel exec %s\n", fwd(t.Lyrebird))
@@ -327,5 +340,12 @@ func (t *Tor) StartAuto(progress func(int, string)) error {
 	}
 	t.SocksAddr = fmt.Sprintf("127.0.0.1:%d", sp)
 	t.CtrlAddr = fmt.Sprintf("127.0.0.1:%d", cp)
+	if t.TransparentPorts {
+		tp, dp, err := freePortPair()
+		if err != nil {
+			return err
+		}
+		t.TransPort, t.DNSPort = tp, dp
+	}
 	return t.Start(progress)
 }

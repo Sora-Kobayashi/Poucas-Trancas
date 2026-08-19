@@ -78,6 +78,8 @@ UDP (WireGuard) — e para isso o campo SOCKS5 aceita apontar para ele.
 
 ## Uso
 
+### Windows
+
 Baixe o `.exe` e **execute como Administrador** — carregar o driver de rede
 exige isso (o Windows pede pelo UAC no primeiro clique).
 

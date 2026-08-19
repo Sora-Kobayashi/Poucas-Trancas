@@ -78,6 +78,8 @@ If you want voice *and* a foreign IP, you need a transport that carries UDP
 
 ## Usage
 
+### Windows
+
 Download the `.exe` and **run as Administrator** — loading the network
 driver requires it (Windows asks via UAC on the first click).
 

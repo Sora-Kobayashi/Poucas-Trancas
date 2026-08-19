@@ -1,221 +1,224 @@
+**English** · [Português](README.pt-BR.md)
+
 # Poucas Trancas
 
-Faz o Discord sair por uma **rede anônima**, sem gambiarra, sem VPN e sem
-proxy de estranho.
+Routes Discord through an **anonymity network** — no hacks, no VPN, no
+stranger's proxy.
 
-O nome é honesto: *poucas trancas*. A ferramenta não promete blindagem —
-ela troca por onde o seu tráfego sai e diz, o tempo todo, o que continua
-exposto.
-
----
-
-## Por que existe
-
-As soluções comuns para mudar por onde o Discord sai têm todas o mesmo
-problema: você troca um risco por outro.
-
-- **VPN grátis / proxy público** — você passa *todo* o seu tráfego por um
-  servidor de um desconhecido, que vê seus destinos, pode registrar e pode
-  vender. Trocou o seu provedor por um estranho ainda pior.
-- **VPN paga** — melhor, mas ainda é uma empresa que sabe quem você é
-  (pagou com cartão) e vê tudo que você acessa. Confiança concentrada em um
-  ponto.
-- **DLL injetada no Discord** — mexe dentro de um processo que guarda seu
-  token, some a cada atualização e não é auditável.
-- **Mudar região na mão, mexer em firewall, forçar rota** — gambiarra que
-  quebra no próximo update e some com voz e tela sem avisar.
-
-Poucas Trancas evita os quatro. O tráfego sai pela **rede Tor** — três
-saltos, cada nó sabendo só o anterior e o próximo, nenhum deles sabendo
-quem você é *e* para onde vai ao mesmo tempo. Ninguém no caminho tem o
-quadro completo, e você não precisa confiar em nenhum operador específico.
-
-E o Discord não é tocado: nada é injetado, nenhum arquivo dele é alterado,
-o desvio sobrevive às atualizações.
+The name is honest: *poucas trancas* ("few locks", in Portuguese). This tool
+doesn't promise armor — it changes where your traffic exits and tells you,
+at all times, what's still exposed.
 
 ---
 
-## Como funciona
+## Why it exists
 
-Um driver de rede (WinDivert) intercepta o tráfego TCP **por processo**: ele
-diz qual programa abriu cada conexão, e só as do Discord são desviadas para
-um proxy local, que refaz a discagem pela rede anônima.
+The usual ways to change where Discord exits all share one problem: you
+trade one risk for another.
+
+- **Free VPN / public proxy** — you route *all* your traffic through a
+  stranger's server, which sees your destinations, can log them, and can
+  sell them. You swapped your ISP for someone even worse.
+- **Paid VPN** — better, but still a company that knows who you are (you
+  paid with a card) and sees everything you access. Trust concentrated in
+  one point.
+- **DLL injected into Discord** — runs inside a process that holds your
+  token, breaks on every update, and isn't auditable.
+- **Manually changing region, firewall tricks, forcing routes** — hacks
+  that break on the next update and kill voice/screen without warning.
+
+Poucas Trancas avoids all four. Traffic exits through the **Tor network** —
+three hops, each node knowing only the previous and next one, none of them
+knowing who you are *and* where you're going at the same time. Nobody on the
+path has the full picture, and you don't have to trust any single operator.
+
+And Discord itself is untouched: nothing is injected, no file of it is
+altered, and the redirect survives updates.
+
+---
+
+## How it works
+
+A network driver (WinDivert) intercepts TCP traffic **per process**: it
+tells which program opened each connection, and only Discord's are diverted
+to a local proxy, which re-dials through the anonymity network.
 
 ```
-Discord ──TCP──▶ desvio por PID ──▶ proxy local ──▶ Tor ──▶ internet
-                 (WinDivert)                         3 saltos
+Discord ──TCP──▶ per-PID divert ──▶ local proxy ──▶ Tor ──▶ internet
+                 (WinDivert)                         3 hops
 ```
 
-Tor e WinDivert vão **dentro do executável**. Um arquivo, nada para
-instalar, nada para baixar, funciona sem rede na primeira execução.
+Tor and WinDivert ship **inside the executable**. One file, nothing to
+install, nothing to download, works offline on first run.
 
-Prefere a sua própria saída em vez do Tor? Aponte para um **SOCKS5 seu** — a
-mesma arquitetura, com o transporte que você controla.
+Prefer your own exit instead of Tor? Point it at your own **SOCKS5** — same
+architecture, with a transport you control.
 
 ---
 
-## O limite, dito na cara
+## The limit, stated plainly
 
-**Tor não transporta UDP.** É projeto da rede, não defeito da ferramenta.
-Voz e compartilhamento de tela do Discord são UDP e continuam saindo
-direto, expondo seu IP real ao servidor de mídia.
+**Tor doesn't carry UDP.** That's a design property of the network, not a
+flaw in this tool. Discord's voice and screen sharing are UDP and keep going
+out directly, exposing your real IP to the media server.
 
-| Modo | Voz e tela | IP real |
+| Mode | Voice & screen | Real IP |
 |---|---|---|
-| **Deixar passar** | funcionam | exposto ao servidor de mídia |
-| **Bloquear** | param de funcionar | não vaza |
+| **Let through** | work | exposed to the media server |
+| **Block** | stop working | not leaked |
 
-Não há terceira opção com Tor. A interface mostra qual modo está valendo o
-tempo todo, e **conta cada conexão que escapa da rota anônima** — o app te
-avisa em vez de deixar você descobrir sozinho.
+There's no third option with Tor. The UI shows which mode is active at all
+times, and **counts every connection that escapes the anonymous route** —
+the app warns you instead of letting you find out on your own.
 
-Quem quiser voz *e* IP estrangeiro precisa de um transporte que carregue
-UDP (WireGuard) — e para isso o campo SOCKS5 aceita apontar para ele.
+If you want voice *and* a foreign IP, you need a transport that carries UDP
+(WireGuard) — and for that the SOCKS5 field lets you point at it.
 
 ---
 
-## Uso
+## Usage
 
-Baixe o `.exe` e **execute como Administrador** — carregar o driver de rede
-exige isso (o Windows pede pelo UAC no primeiro clique).
+Download the `.exe` and **run as Administrator** — loading the network
+driver requires it (Windows asks via UAC on the first click).
 
-1. Escolha a saída: **Tor** ou um **SOCKS5 próprio**
-2. Decida o que fazer com voz e tela
-3. **Conectar** e espere a barra chegar a 100%
-4. **Reiniciar** o Discord na lista de clientes
+1. Choose the exit: **Tor** or your own **SOCKS5**
+2. Decide what to do with voice & screen
+3. **Connect** and wait for the bar to reach 100%
+4. **Restart** Discord from the client list
 
-O desvio só pega conexões novas, por isso o reinício.
+The divert only catches new connections, hence the restart.
 
-Fechar a janela pergunta se você quer mandar para a **bandeja** (o túnel
-continua) ou sair. As preferências ficam em
+Closing the window asks whether to send it to the **tray** (the tunnel stays
+up) or quit. Preferences live in
 `%LOCALAPPDATA%\poucastrancas\config.json`.
 
-### Se a rede bloquear o Tor
+### If the network blocks Tor
 
-Barra travada em `loading_descriptors` = sua rede filtra o Tor. Pegue
-pontes em [bridges.torproject.org](https://bridges.torproject.org), cole no
-campo de pontes e reconecte. O obfs4proxy já vai embutido.
+Bar stuck at `loading_descriptors` = your network is filtering Tor. Get
+bridges at [bridges.torproject.org](https://bridges.torproject.org), paste
+them in the bridges field, and reconnect. obfs4proxy is already embedded.
 
-### Liberar o compartilhamento de tela
+### Unlocking screen sharing
 
-Se o compartilhamento de tela aparecer como **Not Eligible** / bloqueado, dá
-para liberar por um experiment do Discord:
+If screen sharing shows up as **Not Eligible** / blocked, you can unlock it
+through a Discord experiment:
 
-1. Instale o **Vencord** — repositório oficial
-   [github.com/Vendicated/Vencord](https://github.com/Vendicated/Vencord) ou
-   site [vencord.dev](https://vencord.dev). (Não achou? procura "Vencord" no
-   Google e cai num dos dois.)
-2. Nas configurações **do próprio Discord**, vá na seção do **Vencord** →
-   **Plugins** e ative o **Experiments**.
-3. **Reinicie o cliente do Discord.**
-4. Volte nas configurações do Discord e procure a seção **Experiments**.
-5. Ache o **`2026-08-video-guard`** — ou clique direto em
-   `dev://experiment/2026-08-video-guard` — e deixe em **Not Eligible**.
+1. Install **Vencord** — official repo
+   [github.com/Vendicated/Vencord](https://github.com/Vendicated/Vencord) or
+   site [vencord.dev](https://vencord.dev). (Can't find it? search "Vencord"
+   on Google and you'll land on one of the two.)
+2. In **Discord's own settings**, go to the **Vencord** section →
+   **Plugins** and enable **Experiments**.
+3. **Restart the Discord client.**
+4. Back in Discord's settings, find the **Experiments** section.
+5. Find **`2026-08-video-guard`** — or click
+   `dev://experiment/2026-08-video-guard` directly — and set it to
+   **Not Eligible**.
 
-> Isso mexe em flags internas do Discord via Vencord — contraria o ToS dele,
-> igual ao aviso lá embaixo. Use por sua conta.
-
----
-
-## Privacidade, sem letra miúda
-
-- **A ferramenta não escreve log de diagnóstico.** O build de release não
-  grava histórico do que você fez. O que fica em disco é só o necessário
-  para funcionar: sua configuração e os binários do Tor/WinDivert.
-- **Sem telemetria, sem "casa" para ligar.** Não há servidor deste projeto.
-  O tráfego vai para a rede Tor pública, e nada volta para ninguém.
-- **O código está todo aqui.** Não confie na palavra do README — leia.
+> This touches Discord's internal flags via Vencord — against its ToS, same
+> as the disclaimer below. Use at your own risk.
 
 ---
 
-## Detalhes técnicos
+## Privacy, no fine print
+
+- **The tool writes no diagnostic log.** The release build keeps no history
+  of what you did. What lands on disk is only what's needed to run: your
+  config and the Tor/WinDivert binaries.
+- **No telemetry, no "phone home".** There is no server for this project.
+  Traffic goes to the public Tor network, and nothing comes back to anyone.
+- **The code is all here.** Don't take the README's word — read it.
+
+---
+
+## Technical notes
 
 <details>
-<summary>Como o desvio é feito</summary>
+<summary>How the divert is done</summary>
 
-A camada `SOCKET` do WinDivert informa qual PID abriu cada porta local. A
-camada `NETWORK` entrega os pacotes desses fluxos, reescritos para
-`127.0.0.1:<proxy>`, guardando o destino original numa tabela indexada por
-`(porta, família)`. O proxy consulta a tabela e disca pela saída escolhida.
-Na volta, a reescrita é desfeita. O índice da interface é preservado e
-restaurado junto — um pacote com IPs reais entregue com índice de loopback
-é descartado pela pilha do Windows sem erro nenhum.
+WinDivert's `SOCKET` layer reports which PID opened each local port. The
+`NETWORK` layer hands over the packets of those flows, rewritten to
+`127.0.0.1:<proxy>`, storing the original destination in a table keyed by
+`(port, family)`. The proxy looks up the table and dials through the chosen
+exit. On the way back, the rewrite is undone. The interface index is
+preserved and restored along with it — a packet with real IPs delivered with
+a loopback index is dropped by the Windows stack with no error at all.
 </details>
 
 <details>
-<summary>Por que IPv4 é forçado com Tor</summary>
+<summary>Why IPv4 is forced with Tor</summary>
 
-Pouquíssimos nós de saída do Tor têm IPv6, então um destino v6 falha mesmo
-em porta permitida. O SYN IPv6 dos alvos é descartado e o cliente cai em
-IPv4 pelo próprio Happy Eyeballs — e por IPv4 as portas de mídia do Discord
-(2082–2096) estão na política de saída padrão do Tor. Com SOCKS5 próprio
-isso fica desligado.
+Very few Tor exit nodes have IPv6, so a v6 destination fails even on an
+allowed port. The targets' IPv6 SYN is dropped and the client falls back to
+IPv4 via its own Happy Eyeballs — and over IPv4 Discord's media ports
+(2082–2096) are in Tor's default exit policy. With your own SOCKS5 this is
+turned off.
 </details>
 
 <details>
-<summary>Sem framework de UI</summary>
+<summary>No UI framework</summary>
 
-A janela é Win32 puro, desenhada em GDI. Sem Electron, sem WebView, sem
-Wails. A única dependência é `golang.org/x/sys`, biblioteca oficial do Go. O
-executável não exige runtime nenhum instalado na máquina.
+The window is pure Win32, drawn in GDI. No Electron, no WebView, no Wails.
+The only dependency is `golang.org/x/sys`, Go's official library. The
+executable requires no runtime installed on the machine.
 </details>
 
 ---
 
-## Compilar
+## Building
 
-Requer [Go](https://go.dev) 1.26+. Sem cgo, sem toolchain C.
+Requires [Go](https://go.dev) 1.26+. No cgo, no C toolchain.
 
 ```bash
-go run ./cmd/fetchdeps    # baixa Tor + WinDivert e popula os embeds
+go run ./cmd/fetchdeps    # downloads Tor + WinDivert and populates the embeds
 go build -trimpath -ldflags="-H windowsgui -s -w -buildid=" -o poucas-trancas.exe .
 ```
 
-O `fetchdeps` aceita `-sha256 <hash>` para conferir o Tor Expert Bundle
-contra o hash publicado em torproject.org. Sem ele o download é aceito só
-com a garantia do HTTPS — em uma ferramenta de anonimato, vale conferir. Os
-hashes do WinDivert são fixos no código: se o release for republicado, o
-download para em vez de aceitar binário diferente.
+`fetchdeps` pins the official SHA-256 of the Tor Expert Bundle (verified
+against torproject.org): the build and CI refuse any different binary. The
+WinDivert hashes are fixed in code — if the release is republished, the
+download stops instead of accepting a different binary.
 
 ```
-core/divert/     ligação com o WinDivert, sem cgo
-core/redirect/   desvio por PID, tabela NAT, proxy transparente
-core/tor.go      cliente Tor gerenciado, SOCKS5 próprio
-core/ui/         janela Win32 pura, desenhada em GDI
-cmd/fetchdeps/   popula os binários embutidos (só no build)
+core/divert/     WinDivert binding, no cgo
+core/redirect/   per-PID divert, NAT table, transparent proxy
+core/tor.go      managed Tor client, own SOCKS5
+core/ui/         pure Win32 window, drawn in GDI
+cmd/fetchdeps/   populates the embedded binaries (build only)
 ```
 
 ---
 
-## Avisos
+## Disclaimers
 
-Modificar o comportamento de rede do Discord contraria os Termos de Serviço
-dele. A ferramenta não altera o cliente nem automatiza nada dentro dele, mas
-a decisão de usar é sua.
+Modifying Discord's network behavior goes against its Terms of Service. This
+tool doesn't alter the client or automate anything inside it, but the choice
+to use it is yours.
 
-O Tor protege *quem* você é, não *o que* você faz. Sua conta continua sendo
-sua conta.
+Tor protects *who* you are, not *what* you do. Your account is still your
+account.
 
-Projeto pessoal, sem auditoria externa. O código está aberto para ser lido.
+Personal project, no external audit. The code is open to be read.
 
-**A partir do momento em que você baixa e usa, é por sua conta e risco.** A
-ferramenta é fornecida como está, sem garantia de nenhum tipo (ver seções 7
-e 8 da licença). O que você faz com ela, e as consequências disso, são sua
-responsabilidade — não do autor.
+**The moment you download and use it, it's at your own risk.** The tool is
+provided as is, with no warranty of any kind (see sections 7 and 8 of the
+license). What you do with it, and the consequences, are your
+responsibility — not the author's.
 
-Boa parte do código foi feita com a IA **Claude**, da Anthropic. Se você não
-curte isso, pouco me importa — usa outra solução, ou faz um fork.
+Much of the code was written with the help of the AI **Claude**, by
+Anthropic. If you don't like that, I couldn't care less — use another tool,
+or fork it.
 
-## Licença
+## License
 
-**Apache 2.0** — veja [LICENSE](LICENSE).
+**Apache 2.0** — see [LICENSE](LICENSE).
 
-Você pode usar, modificar, redistribuir e até vender. O que a licença
-**obriga**: manter o arquivo [NOTICE](NOTICE) com o crédito ao autor em
-qualquer fork ou redistribuição (seção 4). Quem publicar sem o crédito está
-violando a licença.
+You may use, modify, redistribute, and even sell it. What the license
+**requires**: keep the [NOTICE](NOTICE) file with credit to the author in
+any fork or redistribution (section 4). Publishing without the credit
+violates the license.
 
-Inclui binários de terceiros redistribuídos sem modificação:
-[Tor](https://www.torproject.org) (BSD-3-Clause) e
-[WinDivert](https://github.com/basil00/WinDivert) (LGPLv3) — que mantêm as
-próprias licenças.
+Includes third-party binaries redistributed unmodified:
+[Tor](https://www.torproject.org) (BSD-3-Clause) and
+[WinDivert](https://github.com/basil00/WinDivert) (LGPLv3) — which keep their
+own licenses.

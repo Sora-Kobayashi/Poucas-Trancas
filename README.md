@@ -96,6 +96,29 @@ Barra travada em `loading_descriptors` = sua rede filtra o Tor. Pegue
 pontes em [bridges.torproject.org](https://bridges.torproject.org), cole no
 campo de pontes e reconecte. O obfs4proxy já vai embutido.
 
+### Liberar o compartilhamento de tela
+
+Se o compartilhamento de tela aparecer como **Not Eligible** / bloqueado, dá
+para liberar por um experiment do Discord, usando o Vencord:
+
+1. Baixe e instale o **Vencord** — no repositório oficial
+   [github.com/Vendicated/Vencord](https://github.com/Vendicated/Vencord) ou
+   pelo site [vencord.dev](https://vencord.dev). (Se não achar direto,
+   procura "Vencord" no Google e cai num dos dois.)
+2. Nas configurações do Vencord, procure o plugin **Experiments** e
+   **ative** ele.
+3. Reabra as configurações do Discord: vai aparecer uma seção
+   **Experiments** lá embaixo (em *Somente para equipe*).
+4. Procure por **`2026-08-video-guard`** — ou clique direto no link
+   `dev://experiment/2026-08-video-guard`.
+5. Deixe a opção em **Not Eligible**.
+
+Pronto, o compartilhamento de tela fica liberado.
+
+> Isso é uma modificação de cliente (Vencord) e mexe em flags internas do
+> Discord — contraria o ToS dele, igual ao aviso lá embaixo. Use por sua
+> conta.
+
 ---
 
 ## Privacidade, sem letra miúda

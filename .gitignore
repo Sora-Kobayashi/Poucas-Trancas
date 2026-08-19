@@ -5,6 +5,7 @@ core/divert/dist/*
 !core/divert/dist/.gitkeep
 
 build/bin/
+build/ptcli-linux
 *.exe
 
 # recurso gerado (icone + manifesto), regenerado no build

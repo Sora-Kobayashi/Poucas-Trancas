@@ -1,0 +1,10 @@
+# Fonte com LF sempre; evita o "CRLF" no checkout e mantém o repo consistente
+# entre Windows e Linux.
+* text=auto eol=lf
+
+# Binários: nunca tratar como texto
+*.ico   binary
+*.png   binary
+*.exe   binary
+*.gz    binary
+*.syso  binary

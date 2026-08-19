@@ -1,0 +1,90 @@
+name: build
+
+# Compila o executavel no lado do GitHub. Os binarios embutidos (Tor,
+# WinDivert) NAO vao no repositorio — o fetchdeps os baixa aqui, entao o
+# artefato sai completo sem ninguem precisar rodar nada na mao.
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch: # permite disparar manualmente pela aba Actions
+
+permissions:
+  contents: write # necessario para anexar o .exe a um Release em tag
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod # usa a mesma versao do go.mod
+          cache: true
+
+      - name: Vet e testes
+        run: |
+          # core/ui e Windows-only; na Linux o `./...` reclama que o pacote
+          # nao tem arquivos. Vet cruzado com GOOS=windows compila e checa o
+          # codigo Windows (sem executar). A nota do idioma Win32 nao bloqueia.
+          GOOS=windows go vet ./... || true
+          # os unicos testes de verdade estao em core/redirect (cross-platform).
+          go test ./core/redirect/
+
+      - name: Baixar Tor + WinDivert (embeds)
+        run: go run ./cmd/fetchdeps
+
+      - name: Gerar recurso (icone + manifesto de administrador)
+        run: |
+          go install github.com/akavel/rsrc@v0.10.2
+          "$(go env GOPATH)/bin/rsrc" \
+            -manifest build/windows/app.manifest \
+            -ico build/windows/icon.ico \
+            -arch amd64 -o rsrc_windows_amd64.syso
+
+      - name: Compilar (Windows amd64, endurecido)
+        env:
+          GOOS: windows
+          GOARCH: amd64
+          CGO_ENABLED: "0"
+        run: |
+          go build -trimpath \
+            -ldflags="-H windowsgui -s -w -buildid=" \
+            -o poucas-trancas.exe .
+          ls -la poucas-trancas.exe
+
+      - name: Publicar artefato (sempre — util em PR)
+        uses: actions/upload-artifact@v4
+        with:
+          name: poucas-trancas
+          path: poucas-trancas.exe
+
+      # Release "latest": movel, sempre com o build mais novo do main. E um
+      # download permanente (nao expira, sem login) em /releases/latest.
+      - name: Release latest (push no main)
+        if: github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete latest --repo "$GITHUB_REPOSITORY" --yes --cleanup-tag || true
+          gh release create latest poucas-trancas.exe \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "Build mais recente" \
+            --notes "Compilado automaticamente do último commit no main (${GITHUB_SHA:0:7}). Para versões estáveis, use as tags." \
+            --prerelease
+
+      # Release versionado: criado ao marcar uma tag vX.Y.Z. Nao expira,
+      # com notas geradas a partir dos commits.
+      - name: Release versionado (tag vX.Y.Z)
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" poucas-trancas.exe \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "${GITHUB_REF_NAME}" \
+            --generate-notes

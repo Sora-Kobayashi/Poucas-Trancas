@@ -1,0 +1,19 @@
+Poucas Trancas
+Copyright 2026 Poucas Trancas
+
+Este produto foi criado por Poucas Trancas.
+
+Qualquer redistribuição, fork ou trabalho derivado DEVE manter este arquivo
+NOTICE e o crédito acima, conforme a seção 4 da Licença Apache 2.0.
+
+Boa parte do código foi escrita com a ajuda da IA Claude, da Anthropic. As
+decisões de projeto, os testes e a responsabilidade pelo que é publicado são
+do autor.
+
+--------------------------------------------------------------------------
+Componentes de terceiros redistribuídos sem modificação:
+
+- Tor (https://www.torproject.org) — licença BSD-3-Clause
+- WinDivert (https://github.com/basil00/WinDivert) — licença LGPLv3
+
+Estes mantêm suas próprias licenças; nada nesta licença as altera.

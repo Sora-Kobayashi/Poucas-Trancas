@@ -1,0 +1,15 @@
+# binarios embutidos: baixados por `go run ./cmd/fetchdeps`, nao versionados
+torbin/dist/*
+!torbin/dist/.gitkeep
+core/divert/dist/*
+!core/divert/dist/.gitkeep
+
+build/bin/
+*.exe
+
+# recurso gerado (icone + manifesto), regenerado no build
+*.syso
+# previews temporarios do gerador de icone
+build/_*.png
+# log de diagnostico (so no build -tags debug), fica no appdata mas defensivo
+debug.log

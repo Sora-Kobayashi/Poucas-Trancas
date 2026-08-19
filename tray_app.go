@@ -9,10 +9,18 @@ package main
 
 import (
 	"fmt"
+	"os/exec"
 
 	"poucastrancas/core"
 	"poucastrancas/core/tray"
 )
+
+// openRepo abre a pagina do projeto no navegador. Via rundll32 para nao
+// duplicar o binding de ShellExecute que ja existe na UI.
+func openRepo() {
+	_ = exec.Command("rundll32", "url.dll,FileProtocolHandler",
+		"https://github.com/Sora-Kobayashi/Poucas-Trancas").Start()
+}
 
 func (a *App) trayRef() *tray.Tray {
 	a.mu.Lock()
@@ -46,6 +54,7 @@ func (a *App) refreshTrayMenu(s core.Status) {
 		{Label: "Mostrar janela", OnClick: func() { a.win.Show() }},
 		{Label: action, OnClick: a.toggleConnection},
 		{Sep: true},
+		{Label: "GitHub — Sora-Kobayashi", OnClick: openRepo},
 		{Label: "Sair", OnClick: a.quit},
 	})
 }

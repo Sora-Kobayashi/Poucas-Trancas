@@ -68,6 +68,23 @@ const (
 	tmeLeave = 0x00000002
 )
 
+// Autor e projeto. Ficam num lugar so; o rodape da janela e o menu da
+// bandeja apontam para ca.
+const (
+	authorName = "Sora-Kobayashi"
+	repoURL    = "https://github.com/Sora-Kobayashi/Poucas-Trancas"
+)
+
+// openURL abre um link no navegador padrao.
+func openURL(u string) {
+	verb := utf16ptr("open")
+	target := utf16ptr(u)
+	pShellExecute.Call(0,
+		uintptr(unsafe.Pointer(verb)),
+		uintptr(unsafe.Pointer(target)),
+		0, 0, 1 /* SW_SHOWNORMAL */)
+}
+
 type rect struct{ Left, Top, Right, Bottom int32 }
 
 func (r rect) w() int32 { return r.Right - r.Left }
@@ -148,6 +165,7 @@ var (
 	user32   = windows.NewLazySystemDLL("user32.dll")
 	gdi32    = windows.NewLazySystemDLL("gdi32.dll")
 	kernel32 = windows.NewLazySystemDLL("kernel32.dll")
+	shell32  = windows.NewLazySystemDLL("shell32.dll")
 
 	pRegisterClassEx  = user32.NewProc("RegisterClassExW")
 	pCreateWindowEx   = user32.NewProc("CreateWindowExW")
@@ -199,6 +217,7 @@ var (
 	pGetStockObject         = gdi32.NewProc("GetStockObject")
 
 	pGetModuleHandle = kernel32.NewProc("GetModuleHandleW")
+	pShellExecute    = shell32.NewProc("ShellExecuteW")
 )
 
 func utf16ptr(s string) *uint16 {

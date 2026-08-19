@@ -354,6 +354,17 @@ func (w *Window) draw(c *canvas, cr rect) {
 		c.text(n.text, rect{x0 + 13, y + 8, x1 - 10, y + h}, textOpts{fSmall, fg, dtLeft | dtWordBrk, 0})
 		y += h + 6
 	}
+
+	// ── rodape: credito discreto, clicavel (abre o repo) ─────────────
+	foot := "por " + authorName + "  ·  github.com/Sora-Kobayashi/Poucas-Trancas"
+	footY := cr.Bottom - 20
+	fw := c.textWidth(foot, fTiny)
+	fr := rect{x0, footY, x0 + fw, footY + 16}
+	col := colFaint
+	if idx := w.addHit(fr, func() { openURL(repoURL) }); idx == w.hover {
+		col = colDim
+	}
+	c.text(foot, fr, textOpts{fTiny, col, dtLeft | dtSingle, 0})
 }
 
 type note struct {
